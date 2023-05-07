@@ -13,7 +13,7 @@ import mnist
 
 warnings.filterwarnings("ignore")
 
-n_epochs = 10
+n_epochs = 12
 batch_size_train = 64
 batch_size_test = 1000
 learning_rate = 0.0009
