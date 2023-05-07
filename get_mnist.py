@@ -1,6 +1,6 @@
 '''
 Extracts and Downloads the MNIST dataset as images.
-
+ctguc
 @version 3.8.2021
 '''
 
