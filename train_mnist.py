@@ -329,7 +329,7 @@ def load_trunc_grid(f=os.path.join(DIR_TRAINED_MODELS, 'truncated_grid.pth')):
     return net.to(DEVICE)
 
 if __name__ == '__main__':
-    #train_grid(f= os.path.join(DIR_TRAINED_MODELS,"grid_net_cd2.pth"))
+    train_grid(f= os.path.join(DIR_TRAINED_MODELS,"grid_net_cd2.pth"))
     net = load_grid()
     
     for data, target in mnist_test_loader(train=False, batch_size=100, shuffle=False):

@@ -40,7 +40,7 @@ else:
 
 # Define loader
 def mnist_loader(train=True, batch_size=BATCH_SIZE, shuffle=True):
-    loader =  th.utils.data.DataLoader(datasets.ImageFolder('../data/catdog/train', 
+    loader =  th.utils.data.DataLoader(datasets.ImageFolder('Data/catdog/train', 
                 transform=transforms.Compose([
                     transforms.Grayscale(1),
                     transforms.Resize((28,28)),
@@ -49,7 +49,7 @@ def mnist_loader(train=True, batch_size=BATCH_SIZE, shuffle=True):
     return loader
 
 def mnist_test_loader(train=False, batch_size=BATCH_SIZE, shuffle=True):
-    loader =  th.utils.data.DataLoader(datasets.ImageFolder('../data/catdog/test', 
+    loader =  th.utils.data.DataLoader(datasets.ImageFolder('Data/catdog/test', 
                 transform=transforms.Compose([
                     transforms.Grayscale(1),
                     transforms.Resize((28,28)),
