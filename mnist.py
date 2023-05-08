@@ -40,21 +40,30 @@ else:
 
 # Define loader
 def mnist_loader(train=True, batch_size=BATCH_SIZE, shuffle=True):
-    loader =  th.utils.data.DataLoader(
-            datasets.MNIST('../data', train=train, download=True, 
+    loader =  th.utils.data.DataLoader(datasets.ImageFolder('../data/catdog/train', 
                 transform=transforms.Compose([
-                    transforms.ToTensor(),
-                    transforms.Normalize((0.1307,), (0.3081,))
-                ])),
+                    transforms.Grayscale(1),
+                    transforms.Resize((28,28)),
+                    transforms.ToTensor()])),
+            batch_size=batch_size, shuffle=shuffle)
+    return loader
+
+def mnist_test_loader(train=False, batch_size=BATCH_SIZE, shuffle=True):
+    loader =  th.utils.data.DataLoader(datasets.ImageFolder('../data/catdog/test', 
+                transform=transforms.Compose([
+                    transforms.Grayscale(1),
+                    transforms.Resize((28,28)),
+                    transforms.ToTensor()])),
             batch_size=batch_size, shuffle=shuffle)
     return loader
 
 # Get X for testing
-for data, target in mnist_loader(train=False, batch_size=100, shuffle=False):
+for data, target in mnist_test_loader(train=False, batch_size=100, shuffle=False):
     continue
 data = data.view(-1, 28**2)
 data, target = data.to(DEVICE), target.to(DEVICE)
-X0 = data[82][None, :]
+print(data.shape)
+X0 = data[7][None, :]
 
 
 # Network dims

@@ -263,7 +263,7 @@ Inputs:
 Outputs:
     The loaded model
 '''
-def load_grid(f=os.path.join(DIR_TRAINED_MODELS, 'grid_net.pth'), rand_S=True, report_acc=True):
+def load_grid(f=os.path.join(DIR_TRAINED_MODELS, 'grid_net_cd2.pth'), rand_S=True, report_acc=True):
     if f is None:
         f = F_GRID_TRAIN if rand_S else F_GRID_ORD_TRAIN
     net = mnist_ONN()
@@ -329,10 +329,10 @@ def load_trunc_grid(f=os.path.join(DIR_TRAINED_MODELS, 'truncated_grid.pth')):
     return net.to(DEVICE)
 
 if __name__ == '__main__':
-    #train_grid()
+    #train_grid(f= os.path.join(DIR_TRAINED_MODELS,"grid_net_cd2.pth"))
     net = load_grid()
     
-    for data, target in mnist_loader(train=False, batch_size=100, shuffle=False):
+    for data, target in mnist_test_loader(train=False, batch_size=100, shuffle=False):
         continue
     data = data.view(-1, 28**2)
     data, target = data.to(DEVICE), target.to(DEVICE)
