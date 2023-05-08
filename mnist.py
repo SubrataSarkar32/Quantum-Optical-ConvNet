@@ -29,7 +29,7 @@ import math
 
 TEST_SIZE = 10_000
 BATCH_SIZE = 100
-USE_CUDA = False
+USE_CUDA = True
 if USE_CUDA:
     print('Using CUDA')
     DEVICE = th.device('cuda')
