@@ -15,7 +15,7 @@ Runs much faster with GPU with CUDA cores.
 
 ## Credits
 
-The codebase here is based on https://github.com/rishab-partha/Quantum-Optical-ConvNet which is based on https://github.com/mike-fang/imprecise_optical_neural_network. The CNN code was provided by Rohan Bhomwik. Modifications are contained within the subfolder trained_models, and significant parts of mnist.py, optical_nn.py, and train_mnist.py have been written by me. In addition, the subfolder Data and the files ROC Curves.ipynb, t1-t10.pt, and y1-y10.pt are completely new.
+The codebase here is based on https://github.com/rishab-partha/Quantum-Optical-ConvNet which is based on https://github.com/mike-fang/imprecise_optical_neural_network. The CNN code was provided by Rohan Bhomwik. Modifications are contained within the subfolder trained_models, and significant parts of mnist.py, optical_nn.py, and train_mnist.py have been written by ![Riashab Parthasarathy](https://github.com/rishab-partha). In addition, the subfolder Data and the files ROC Curves.ipynb, t1-t10.pt, and y1-y10.pt are completely new. The dataset loader and test dataset loader have been modified by ![Subrata Sarkar](https://github.com/SubrataSarkar32).
 
 If you wish to train/load/run a sample QOCNN, write 'python train_mnist.py' in the command line and execute.
 
