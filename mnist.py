@@ -27,8 +27,8 @@ from sklearn.metrics import roc_curve, auc
 import math
 
 
-TEST_SIZE = 10_000
-BATCH_SIZE = 100
+TEST_SIZE = 32
+BATCH_SIZE = 32
 USE_CUDA = True
 if USE_CUDA:
     print('Using CUDA')
@@ -43,42 +43,57 @@ def mnist_loader(train=True, batch_size=BATCH_SIZE, shuffle=True):
     loader =  th.utils.data.DataLoader(datasets.ImageFolder('Data/catdog/train', 
                 transform=transforms.Compose([
                     transforms.Grayscale(1),
-                    transforms.Resize((28,28)),
+                    transforms.Resize((64,64)),
                     transforms.ToTensor()])),
             batch_size=batch_size, shuffle=shuffle)
     return loader
+
+def mnist_val_loader(train=False, batch_size=BATCH_SIZE, shuffle=True):
+    loader =  th.utils.data.DataLoader(datasets.ImageFolder('Data/catdog/val', 
+                transform=transforms.Compose([
+                    transforms.Grayscale(1),
+                    transforms.Resize((64,64)),
+                    transforms.ToTensor()])),
+            batch_size=batch_size, shuffle=shuffle)
+    return loader
+
 
 def mnist_test_loader(train=False, batch_size=BATCH_SIZE, shuffle=True):
     loader =  th.utils.data.DataLoader(datasets.ImageFolder('Data/catdog/test', 
                 transform=transforms.Compose([
                     transforms.Grayscale(1),
-                    transforms.Resize((28,28)),
+                    transforms.Resize((64,64)),
                     transforms.ToTensor()])),
             batch_size=batch_size, shuffle=shuffle)
     return loader
 
 # Get X for testing
-for data, target in mnist_test_loader(train=False, batch_size=100, shuffle=False):
+for data, target in mnist_test_loader(train=False, batch_size=BATCH_SIZE, shuffle=False):
     continue
-data = data.view(-1, 28**2)
+data = data.view(-1, 64**2)
 data, target = data.to(DEVICE), target.to(DEVICE)
 print(data.shape)
 X0 = data[7][None, :]
 
 
 # Network dims
-N_IN = 28**2//2
+N_IN = 64**2//2
 
 
-def train(model, n_epochs, log_interval, optim_params, batch_size=10, criterion=nn.NLLLoss(), device=DEVICE, epoch_callback=None, log_callback=None, writer=None, iteration=0):
+def train(model, n_epochs, log_interval, optim_params, batch_size=BATCH_SIZE, criterion=nn.NLLLoss(), device=DEVICE, epoch_callback=None, log_callback=None, writer=None, iteration=0):
     loader = mnist_loader(train=True, batch_size=batch_size)
+    validloader = mnist_val_loader(batch_size=batch_size)
     optimizer = optim.SGD(model.parameters(), **optim_params)
-    #criterion = nn.NLLLoss()
+    #criterion = nn.CrossEntropyLoss()
+    valid_loss_min = np.inf
     tx = time()
     t0 = time()
     for epoch in range(n_epochs):
+        train_loss = 0.0
+        valid_loss = 0.0
+        model.train()
         for batch_idx, (data, target) in enumerate(loader):
-            data = data.view(-1, 28**2)
+            data = data.view(-1, 64**2)
             data = data.to(device)
             target = target.to(device)
             out = model(data)
@@ -86,35 +101,97 @@ def train(model, n_epochs, log_interval, optim_params, batch_size=10, criterion=
             loss = criterion(out, target)
             loss.backward()
             optimizer.step()
+            train_loss = train_loss + ((1/ (batch_idx + 1 ))*(loss.data-train_loss))
             if batch_idx % log_interval == 0 and batch_idx != 0:
                 t = time() - t0
                 t0 = time()
                 acc = (out.argmax(1) == target).float().mean()
                 #acc = get_acc(model, device)
                 out = model(data)
-                print(f'Epoch: {epoch}, Train loss: {loss.float():.4f}, Train acc: {acc:.4f}, Time/it: {t/log_interval * 1e3:.4f} ms')
-                if not writer is None:
-                    print(n_epochs*iteration*60000/batch_size + epoch*60000/batch_size + batch_idx)
-                    writer.add_scalar('training loss', loss.float(), n_epochs*iteration*60000/batch_size + epoch*60000/batch_size + batch_idx)
-                    writer.add_scalar('training accuracy', acc, n_epochs*iteration*60000/batch_size + epoch*60000/batch_size + batch_idx)
+                print(f'Epoch: {epoch}, Batch: {batch_idx:.4f}/{ceil((n_epochs*len(loader))):.1f}, Train loss: {loss.float():.4f}, Train acc: {acc:.4f}, Time/it: {t/log_interval * 1e3:.4f} ms')
+                if not (writer is None):
+                    print(n_epochs*iteration*len(loader)/batch_size + epoch*len(loader)/batch_size + batch_idx)
+                    writer.add_scalar('training loss', loss.float(), n_epochs*iteration*len(loader)/batch_size + epoch*len(loader)/batch_size + batch_idx)
+                    writer.add_scalar('training accuracy', acc, n_epochs*iteration*len(loader)/batch_size + epoch*len(loader)/batch_size + batch_idx)
                 if log_callback:
                     log_callback(model, epoch)
+        # Model validation
+        model.eval()
+        for batch_idx, (data,target) in enumerate(validloader):
+            # Move to GPU
+            data = data.view(-1, 64**2)
+            data, target = data.to(device), target.to(device)
+            # Update the average validation loss
+            # Forward pass: compute predicted outputs by passing inputs to the model
+            output = model(data)
+            # Calculate the batch loss
+            loss = criterion(output, target)
+            # Update the average validation loss
+            valid_loss = valid_loss + ((1/ (batch_idx +1)) * (loss.data - valid_loss))
+    
+        # print training/validation stats
+        print('Epoch: {} \tTraining Loss: {:.5f} \tValidation Loss: {:.5f}'.format(
+            epoch,
+            train_loss,
+            valid_loss))
+    
+        # Save the model if validation loss has decreased
+        if valid_loss <= valid_loss_min:
+            print('Validation loss decreased ({:.5f} --> {:.5f}). Saving model ...'.format(
+                valid_loss_min,
+                valid_loss))
+            #torch.save(model.state_dict(), os.path.join('model','model_transfer.pt'))
+            valid_loss_min = valid_loss
         if epoch_callback:
             epoch_callback(model, epoch)
         print("EpochTime:" + str(time() - tx))
         tx = time()
 
+
 def get_acc(model, device=DEVICE):
     confusion = None
     with th.no_grad():
-        for data, target in mnist_loader(train=False, batch_size=TEST_SIZE):
-            data = data.view(-1, 28**2)
+        for data, target in mnist_test_loader(train=False, batch_size=TEST_SIZE):
+            data = data.view(-1, 64**2)
             data, target = data.to(device), target.to(device)
             out = model(data)
             pred = out.argmax(1)
             acc = (pred == target).float().mean()
             confusion = confusion_matrix(target.cpu(), pred.cpu())
     return acc.item(), confusion
+
+
+def test(model, criterion= nn.NLLLoss(), device=DEVICE):
+        
+        loader = mnist_test_loader(batch_size=TEST_SIZE)
+        # monitor test loss and accuracy
+        test_loss = 0.
+        correct = 0.
+        total = 0.
+
+        model.eval() #set model into evaluation/testing mode. It turns of drop off layer
+        #Iterating over test data
+        for batch_idx, (data, target) in enumerate(loader):
+            # move to GPU
+            data = data.view(-1, 64**2)
+            data, target = data.to(device), target.to(device)
+            # forward pass: compute predicted outputs by passing inputs to the model
+            output = model(data)
+            # calculate the loss
+            loss = criterion(output, target)
+            # update average test loss 
+            test_loss = test_loss + ((1 / (batch_idx + 1)) * (loss.data - test_loss))
+            # convert output probabilities to predicted class
+            pred = output.data.max(1, keepdim=True)[1]
+            # compare predictions to 
+            correct += np.sum(np.squeeze(pred.eq(target.data.view_as(pred))).cpu().numpy())
+            total += data.size(0)
+                
+        print('Test Loss: {:.6f}\n'.format(test_loss))
+
+        print('\nTest Accuracy: %2d%% (%2d/%2d)' % (
+            100. * correct / total, correct, total))
+
 
 class StackedFFTUnitary(nn.Sequential):
     def __init__(self, D, n_stack=None, sigma_PS=0, sigma_BS=0):
@@ -283,9 +360,9 @@ if __name__ == '__main__':
     LR_GRID = 2.5e-4
     LR_COMPLEX = 5e-3
     train_params = {}
-    train_params['n_epochs'] = 5
+    train_params['n_epochs'] = 10
     train_params['log_interval'] = 1
-    train_params['batch_size'] = 100
+    train_params['batch_size'] = 32
 
     optim_params = {}
     optim_params['lr'] = LR_FFT

@@ -122,13 +122,13 @@ Inputs:
     f: location to save the network
     n_h: # of hidden units
 '''
-def train_grid(f=F_GRID_TRAIN, n_h=[256, 256]):
+def train_grid(f=F_GRID_TRAIN, n_h=[256, 256], num_out=2):
 
     # Define training parameters
     train_params = {}
     train_params['n_epochs'] = 5
-    train_params['log_interval'] = 100
-    train_params['batch_size'] = 100
+    train_params['log_interval'] = 10
+    train_params['batch_size'] = 32
 
     # Define optimization parameters
     optim_params = {}
@@ -136,9 +136,9 @@ def train_grid(f=F_GRID_TRAIN, n_h=[256, 256]):
     optim_params['momentum'] = .9
 
     # Create model
-    net = mnist_ONN(hidden_units=n_h)
+    net = mnist_ONN(hidden_units=n_h, num_out=num_out)
 
-    # Train for 10 epochs, slashing learning rate after 5
+    # Train for 5 epochs, slashing learning rate after 5
     train(net, **train_params, optim_params=optim_params)
     optim_params['lr'] /= 5
     train(net, **train_params, optim_params=optim_params)
@@ -244,7 +244,7 @@ Inputs:
 Outputs:
     The loaded model
 '''
-def load_complex(f=F_COMPLEX_TRAIN):
+def load_complex(f=os.path.join(DIR_TRAINED_MODELS, 'complex_net_cd2.pth')):
     net = mnist_complex()
     net.load_state_dict(th.load(f, map_location=DEVICE))
     acc, confusion_matrix = get_acc(net)
@@ -263,10 +263,10 @@ Inputs:
 Outputs:
     The loaded model
 '''
-def load_grid(f=os.path.join(DIR_TRAINED_MODELS, 'grid_net_cd2.pth'), rand_S=True, report_acc=True):
+def load_grid(f=os.path.join(DIR_TRAINED_MODELS, 'grid_net_cd2.pth'), rand_S=True, report_acc=True, num_out=2):
     if f is None:
         f = F_GRID_TRAIN if rand_S else F_GRID_ORD_TRAIN
-    net = mnist_ONN()
+    net = mnist_ONN(num_out=num_out)
     net.load_state_dict(th.load(f, map_location=DEVICE))
     acc, confusion_matrix = get_acc(net)
     print(f'GridNetOrdered loaded from {f} with accuracy {acc}.')
@@ -329,11 +329,14 @@ def load_trunc_grid(f=os.path.join(DIR_TRAINED_MODELS, 'truncated_grid.pth')):
     return net.to(DEVICE)
 
 if __name__ == '__main__':
-    train_grid(f= os.path.join(DIR_TRAINED_MODELS,"grid_net_cd2.pth"))
-    net = load_grid()
+    train_grid(f= os.path.join(DIR_TRAINED_MODELS,"grid_net_cd2.pth"),num_out=2)
+    net = load_grid(f= os.path.join(DIR_TRAINED_MODELS,"grid_net_cd2.pth"),num_out=2)
     
-    for data, target in mnist_test_loader(train=False, batch_size=100, shuffle=False):
+    for data, target in mnist_test_loader(train=False, batch_size=32, shuffle=False):
         continue
-    data = data.view(-1, 28**2)
+    data = data.view(-1, 64**2)
     data, target = data.to(DEVICE), target.to(DEVICE)
     print(th.max(net(data), dim=1))
+    print(target)
+    print(get_acc(net))
+    print(test(net))
