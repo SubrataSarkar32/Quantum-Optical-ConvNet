@@ -128,7 +128,7 @@ def train_grid(f=F_GRID_TRAIN, n_h=[256, 256], num_out=2):
     train_params = {}
     train_params['n_epochs'] = 5
     train_params['log_interval'] = 10
-    train_params['batch_size'] = 32
+    train_params['batch_size'] = 16
 
     # Define optimization parameters
     optim_params = {}
@@ -332,7 +332,7 @@ if __name__ == '__main__':
     train_grid(f= os.path.join(DIR_TRAINED_MODELS,"grid_net_cd2.pth"),num_out=2)
     net = load_grid(f= os.path.join(DIR_TRAINED_MODELS,"grid_net_cd2.pth"),num_out=2)
     
-    for data, target in mnist_test_loader(train=False, batch_size=32, shuffle=False):
+    for data, target in mnist_test_loader(train=False, batch_size=64, shuffle=False):
         continue
     data = data.view(-1, 64**2)
     data, target = data.to(DEVICE), target.to(DEVICE)

@@ -27,8 +27,8 @@ from sklearn.metrics import roc_curve, auc
 import math
 
 
-TEST_SIZE = 32
-BATCH_SIZE = 32
+TEST_SIZE = 16
+BATCH_SIZE = 16
 USE_CUDA = True
 if USE_CUDA:
     print('Using CUDA')
