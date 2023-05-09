@@ -35,7 +35,6 @@ You can donate via BHIM UPI
 
 [![Donate](https://github.com/SubrataSarkar32/subratasarkar32.github.io/blob/master/images/bhimupi(100x15).jpg?raw=true)](upi://pay?pn=Subrata%20Sarakar&pa=9002824700%40upi&tn=Donation&am=&cu=INR&url=http%3A%2F%2Fupi.link%2F)
 
-OR
-
 Scan this QR Code to open your UPI Payment App on your phone
+
 ![QR code](https://github.com/SubrataSarkar32/subratasarkar32.github.io/blob/master/images/qrpay.png?raw=true)
