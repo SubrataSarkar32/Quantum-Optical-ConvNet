@@ -5,7 +5,7 @@ A repository for the Research Project Constructing a Quantum Optical Convolution
 
 In this fork we perform cat vs dog classification with QOCNN. The data is placed under 'Data/catdog'
 
-![cat](https://github.com/SubrataSarkar32/Quantum-Optical-ConvNet/blob/master/Data/catdog/test/gatto/1.jpeg?raw=true)  vs ![dog](https://github.com/SubrataSarkar32/Quantum-Optical-ConvNet/blob/master/Data/catdog/test/cane/OIF-e2bexWrojgtQnAPPcUfOWQ.jpeg?raw=true)
+![cat](https://github.com/SubrataSarkar32/Quantum-Optical-ConvNet/blob/master/Data/catdog/test/gatto/1.jpeg?raw=true)    VS   ![dog](https://raw.githubusercontent.com/SubrataSarkar32/Quantum-Optical-ConvNet/master/Data/catdog/test/cane/OIP--9pxEn5HUPsqA38ao3O7TgHaGV.jpeg)
 
 To run this on a different dataset just change the directory paths in 'mnist.py' to your data directory , note images are turned into grayscale and resized to 28x28 and then classification is performed
 
